@@ -3,7 +3,7 @@ import {
   ArrowLeft, Clock, Users, Play, Minus, Plus, ImagePlus,
   ImageOff, Wallpaper, Lock, Unlock, Delete,
 } from "lucide-react";
-import type { Recipe } from "../lib/types";
+import type { Recipe, Step as StepType } from "../lib/types";
 import { scaleStepText, scaleQty } from "../lib/types";
 import { getIcon } from "./IconPicker";
 import type { Language } from "../lib/useSettings";
@@ -34,7 +34,10 @@ export function RecipeDetail({ recipe, lang, onBack, onCook, onUpdate }: RecipeD
   const t = (s: string) => translateUI(s, lang);
   const tt = (s: string) => translateTerm(s, lang);
   const tp = (s: string) => translatePhrase(s, lang);
-  const scale = servings / recipe.servings;
+
+  // Use baseServings when available to compute a stable scale ratio
+  const base = (recipe as any).baseServings ?? recipe.servings ?? 1;
+  const scale = servings / base;
   const totalTime = recipe.steps.reduce((sum, s) => sum + (s.timerMinutes || 0), 0);
 
   const formatQty = (qty: number) => scaleQty(qty, scale);
@@ -251,7 +254,7 @@ export function RecipeDetail({ recipe, lang, onBack, onCook, onUpdate }: RecipeD
     const LockPadButton = ({ digit }: { digit: string }) => (
       <button
         onClick={() => pressLockPadDigit(digit)}
-        className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-800/30 bg-amber-950/40 text-xl font-medium text-amber-100 transition-all hover:bg-amber-800/40 active:scale-90 active:bg-amber-700/50 sm:h-16 sm:w-16"
+        className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-800/30 bg-amber-950/40 text-xl font-medium text-amber-100 transition-all hover:bg-amber-800/40 active:scale-90"
       >
         {digit}
       </button>
@@ -275,7 +278,7 @@ export function RecipeDetail({ recipe, lang, onBack, onCook, onUpdate }: RecipeD
           aria-hidden="true"
         />
 
-        <div className={`relative z-10 flex flex-col items-center gap-6 rounded-3xl border border-amber-900/30 bg-gradient-to-b from-[#2a1f15] to-[#1a120a] px-8 py-10 shadow-2xl sm:px-12 ${lockPadShake ? "animate-shake" : ""}`}>
+        <div className={`relative z-10 flex flex-col items-center gap-6 rounded-3xl border border-amber-900/30 bg-gradient-to-b from-[#2a1f15] to-[#1a120a] px-8 py-10 shadow-2xl sm:px-12 ${lockPadShake ? 'animate-shake' : ''}`}>
           <div className="flex flex-col items-center gap-3">
             <Lock size={36} className="text-amber-400" />
             <h2 className="text-lg font-semibold text-amber-200">{recipe.title}</h2>
@@ -285,14 +288,14 @@ export function RecipeDetail({ recipe, lang, onBack, onCook, onUpdate }: RecipeD
           <Dots filled={lockPinInput.length} />
 
           <div className="grid grid-cols-3 gap-3">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
+            {(["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const).map((d) => (
               <LockPadButton key={d} digit={d} />
             ))}
             <div className="h-14 w-14 sm:h-16 sm:w-16" />
             <LockPadButton digit="0" />
             <button
               onClick={pressLockPadBackspace}
-              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-800/30 bg-amber-950/40 text-amber-100 transition-all hover:bg-amber-800/40 active:scale-90 sm:h-16 sm:w-16"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-800/30 bg-amber-950/40 text-amber-100 transition-all hover:bg-amber-800/40 active:scale-90"
             >
               <Delete size={20} />
             </button>
@@ -307,6 +310,25 @@ export function RecipeDetail({ recipe, lang, onBack, onCook, onUpdate }: RecipeD
         </div>
       </div>
     );
+  }
+
+  // Helper: rebuild step text from tokens (if available) so scaling is deterministic
+  function buildScaledStepText(step: StepType, scale: number) {
+    // Use tokens if present
+    const tokens = (step as any).tokens as { value: number; unit?: string; start: number; end: number; raw: string }[] | undefined;
+    if (tokens && tokens.length) {
+      let out = "";
+      let last = 0;
+      for (const tk of tokens) {
+        out += step.text.slice(last, tk.start);
+        out += `${scaleQty(tk.value, scale)}${tk.unit ? ' ' + tt(tk.unit) : ''}`;
+        last = tk.end;
+      }
+      out += step.text.slice(last);
+      return out;
+    }
+    // fallback to regex-based scaling on the raw step text
+    return scaleStepText(step.text, scale);
   }
 
   return (
@@ -370,11 +392,11 @@ export function RecipeDetail({ recipe, lang, onBack, onCook, onUpdate }: RecipeD
             {lockPinError && <p className="text-xs text-red-400">{lockPinError}</p>}
 
             <div className="grid grid-cols-3 gap-2.5">
-              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
+              {(["1", "2", "3", "4", "5", "6", "7", "8", "9"] as const).map((d) => (
                 <button
                   key={d}
                   onClick={() => pressLockModalDigit(d)}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-800/30 bg-amber-950/40 text-lg font-medium text-amber-100 transition active:scale-90 active:bg-amber-700/50"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-800/30 bg-amber-950/40 text-lg font-medium text-amber-100 transition active:scale-90"
                 >
                   {d}
                 </button>
@@ -575,7 +597,7 @@ export function RecipeDetail({ recipe, lang, onBack, onCook, onUpdate }: RecipeD
               </span>
               <div className="flex-1">
                 <p className="text-sm text-white/80">
-                  {scaleStepText(tp(step.text), scale)}
+                  {tp(buildScaledStepText(step, scale))}
                 </p>
                 <div className="mt-1.5 flex gap-3 text-xs text-white/40">
                   <span
