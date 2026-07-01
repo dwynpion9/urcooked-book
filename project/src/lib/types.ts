@@ -21,6 +21,9 @@ export interface Recipe {
   id: string;
   title: string;
   description: string;
+  // baseServings is the canonical servings count the recipe was authored for.
+  baseServings?: number;
+  // servings is the current UI-adjustable value (can be changed by the user)
   servings: number;
   ingredients: Ingredient[];
   steps: Step[];
@@ -48,9 +51,11 @@ export const HEAT_COLORS: Record<HeatLevel, string> = {
 
 export type CardTheme = "glass" | "water" | "wooden";
 
-// Regex to find number+unit patterns in step text for live serving scaler
+// Regex to find number+unit patterns in step text for live serving scaler.
+// Extended to accept mixed fractions ("1 1/2"), simple fractions ("1/2"),
+// decimals ("1.5") and some localized kitchen unit words like "tasa" and "kutsara".
 export const STEP_MEASURE_REGEX =
-  /(\d+(?:\.\d+)?)\s*(cups?|tbsps?|tsps?|tablespoons?|teaspoons?|oz|ounces?|lbs?|pounds?|g\b|grams?|kg|kilograms?|ml|milliliters?|liters?|l\b|pieces?|cloves?|slices?|cans?|pinches?|dashes?)/gi;
+  /(\d+(?:\s+\d+\/\d+)?(?:\.\d+)?|\d+\/\d+)\s*(cups?|tbsps?|tbsp|tsps?|tablespoons?|teaspoons?|teaspoons?|teaspoon|oz|ounces?|lbs?|pounds?|g\b|grams?|kg|kilograms?|ml|milliliters?|liters?|l\b|pieces?|cloves?|slices?|cans?|pinches?|dashes?|tasa|tasa\.|tasa\)|kutsara|kutsarita)/gi;
 
 export function scaleQty(value: number, scale: number): string {
   const scaled = value * scale;
@@ -68,7 +73,19 @@ export function scaleQty(value: number, scale: number): string {
 export function scaleStepText(text: string, scale: number): string {
   if (scale === 1 || !text) return text;
   return text.replace(STEP_MEASURE_REGEX, (match, numStr, unit) => {
-    const num = parseFloat(numStr);
+    // numStr may be "1 1/2" or "1/2" or "1.5". Normalize before parse.
+    const s = numStr.trim();
+    // Handle mixed fraction like "1 1/2"
+    const mixed = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+    let num = 0;
+    if (mixed) {
+      num = parseInt(mixed[1], 10) + parseInt(mixed[2], 10) / parseInt(mixed[3], 10);
+    } else if (s.includes("/")) {
+      const frac = s.match(/^(\d+)\/(\d+)$/);
+      if (frac) num = parseInt(frac[1], 10) / parseInt(frac[2], 10);
+    } else {
+      num = parseFloat(s);
+    }
     if (isNaN(num)) return match;
     return `${scaleQty(num, scale)} ${unit}`;
   });
