@@ -1,0 +1,193 @@
+// Multi-language food & cooking dictionary.
+// 13 languages: Bisaya, Tagalog, Chinese, Korean, Indian(Hindi), Vietnamese,
+// Taiwanese(Minnan), Thai, Cantonese, Singaporean(Malay), Italian, French, Nigerian(Yoruba).
+// All offline, bundled in the app.
+
+export type LangCode =
+  | "en" | "bis" | "tg" | "zh" | "ko" | "hi" | "vi"
+  | "tw" | "th" | "hk" | "sg" | "it" | "fr" | "yo";
+
+export const LANGUAGES: { code: LangCode; label: string; flag: string }[] = [
+  { code: "en", label: "English", flag: "EN" },
+  { code: "bis", label: "Bisaya", flag: "BIS" },
+  { code: "tg", label: "Tagalog", flag: "TG" },
+  { code: "zh", label: "Chinese", flag: "ZH" },
+  { code: "ko", label: "Korean", flag: "KO" },
+  { code: "hi", label: "Hindi", flag: "HI" },
+  { code: "vi", label: "Vietnamese", flag: "VI" },
+  { code: "tw", label: "Taiwanese", flag: "TW" },
+  { code: "th", label: "Thai", flag: "TH" },
+  { code: "hk", label: "Cantonese", flag: "HK" },
+  { code: "sg", label: "Singaporean", flag: "SG" },
+  { code: "it", label: "Italian", flag: "IT" },
+  { code: "fr", label: "French", flag: "FR" },
+  { code: "yo", label: "Nigerian", flag: "NG" },
+];
+
+// Each entry maps English -> { lang: translation }
+export const FOOD_DICT: Record<string, Partial<Record<LangCode, string>>> = {
+  // === Proteins ===
+  beef: { bis: "karne sa baka", tg: "baka", zh: "牛肉", ko: "소고기", hi: "बीफ", vi: "bò", tw: "牛", th: "เนื้อวัว", hk: "牛", sg: "daging lembu", it: "manzo", fr: "bœuf", yo: "ẹran malù" },
+  pork: { bis: "karne sa baboy", tg: "baboy", zh: "猪肉", ko: "돼지고기", hi: "सूअर का मांस", vi: "heo", tw: "豬", th: "หมู", hk: "豬", sg: "daging babi", it: "maiale", fr: "porc", yo: "ẹran ẹlẹdẹ" },
+  chicken: { bis: "manok", tg: "manok", zh: "鸡肉", ko: "닭고기", hi: "मुर्गी", vi: "gà", tw: "雞", th: "ไก่", hk: "雞", sg: "ayam", it: "pollo", fr: "poulet", yo: "ẹran adie" },
+  turkey: { bis: "pabo", tg: "pabo", zh: "火鸡", ko: "칠면조", hi: "टर्की", vi: "gà tây", tw: "火雞", th: "ไก่งวง", hk: "火雞", sg: "kalkun", it: "tacchino", fr: "dinde", yo: "tolotolo" },
+  duck: { bis: "itik", tg: "itik", zh: "鸭肉", ko: "오리고기", hi: "बत्तख", vi: "vịt", tw: "鴨", th: "เป็ด", hk: "鴨", sg: "itik", it: "anatra", fr: "canard", yo: "pepeye" },
+  lamb: { bis: "karne sa karnero", tg: "tupa", zh: "羊肉", ko: "양고기", hi: "भेड़ का मांस", vi: "cừu", tw: "羊", th: "แกะ", hk: "羊", sg: "kambing", it: "agnello", fr: "agneau", yo: "ẹran aguntan" },
+  fish: { bis: "isda", tg: "isda", zh: "鱼", ko: "생선", hi: "मछली", vi: "cá", tw: "魚", th: "ปลา", hk: "魚", sg: "ikan", it: "pesce", fr: "poisson", yo: "ẹja" },
+  salmon: { bis: "salmon", tg: "salmon", zh: "三文鱼", ko: "연어", hi: "सामन", vi: "cá hồi", tw: "鮭魚", th: "ปลาแซลมอน", hk: "三文魚", sg: "salmon", it: "salmone", fr: "saumon", yo: "ẹja salmon" },
+  tuna: { bis: "tuna", tg: "tuna", zh: "金枪鱼", ko: "참치", hi: "टूना", vi: "cá ngừ", tw: "鮪魚", th: "ปลาทูน่า", hk: "吞拿魚", sg: "tongkol", it: "tonno", fr: "thon", yo: "ẹja tuna" },
+  shrimp: { bis: "hipon", tg: "hipon", zh: "虾", ko: "새우", hi: "झींगा", vi: "tôm", tw: "蝦", th: "กุ้ง", hk: "蝦", sg: "udang", it: "gambero", fr: "crevette", yo: "ẹja alagbọn" },
+  crab: { bis: "kasag", tg: "alimasag", zh: "螃蟹", ko: "게", hi: "केकड़ा", vi: "cua", tw: "蟹", th: "ปู", hk: "蟹", sg: "ketam", it: "granchio", fr: "crabe", yo: "akẹkẹ" },
+  bacon: { bis: "bacon", tg: "bacon", zh: "培根", ko: "베이컨", hi: "बेकन", vi: "thịt xông khói", tw: "培根", th: "เบคอน", hk: "煙肉", sg: "bacon", it: "bacon", fr: "bacon", yo: "bẹkọn" },
+  ham: { bis: "hamonado", tg: "hamon", zh: "火腿", ko: "햄", hi: "हैम", vi: "giăm bông", tw: "火腿", th: "แฮม", hk: "火腿", sg: "ham", it: "prosciutto", fr: "jambon", yo: "hẹẹmu" },
+  sausage: { bis: "longganisa", tg: "longganisa", zh: "香肠", ko: "소시지", hi: "सॉसेज", vi: "xúc xích", tw: "香腸", th: "ไส้กรอก", hk: "腸仔", sg: "sosej", it: "salsiccia", fr: "saucisse", yo: "sọsẹji" },
+  egg: { bis: "itlog", tg: "itlog", zh: "鸡蛋", ko: "계란", hi: "अंडा", vi: "trứng", tw: "蛋", th: "ไข่", hk: "蛋", sg: "telur", it: "uovo", fr: "œuf", yo: "ẹyin" },
+  tofu: { bis: "tokwa", tg: "tokwa", zh: "豆腐", ko: "두부", hi: "टोफू", vi: "đậu phụ", tw: "豆腐", th: "เต้าหู้", hk: "豆腐", sg: "tauhu", it: "tofu", fr: "tofu", yo: "tofu" },
+
+  // === Dairy ===
+  milk: { bis: "gatas", tg: "gatas", zh: "牛奶", ko: "우유", hi: "दूध", vi: "sữa", tw: "牛奶", th: "นม", hk: "牛奶", sg: "susu", it: "latte", fr: "lait", yo: "wara" },
+  cream: { bis: "krema", tg: "krem", zh: "奶油", ko: "크림", hi: "क्रीम", vi: "kem", tw: "奶油", th: "ครีม", hk: "奶油", sg: "krim", it: "panna", fr: "crème", yo: "kiri" },
+  yogurt: { bis: "yogurt", tg: "yogurt", zh: "酸奶", ko: "요거트", hi: "दही", vi: "sữa chua", tw: "優格", th: "โยเกิร์ต", hk: "乳酪", sg: "yogurt", it: "yogurt", fr: "yaourt", yo: "yoguti" },
+  cheese: { bis: "keso", tg: "keso", zh: "奶酪", ko: "치즈", hi: "पनीर", vi: "phô mai", tw: "起司", th: "ชีส", hk: "芝士", sg: "keju", it: "formaggio", fr: "fromage", yo: "kẹẹṣi" },
+  butter: { bis: "mantikilya", tg: "mantikilya", zh: "黄油", ko: "버터", hi: "मक्खन", vi: "bơ", tw: "奶油", th: "เนย", hk: "牛油", sg: "mentega", it: "burro", fr: "beurre", yo: "bọta" },
+
+  // === Fruits ===
+  apple: { bis: "mansanas", tg: "mansanas", zh: "苹果", ko: "사과", hi: "सेब", vi: "táo", tw: "蘋果", th: "แอปเปิ้ล", hk: "蘋果", sg: "epal", it: "mela", fr: "pomme", yo: "àpùl" },
+  banana: { bis: "saging", tg: "saging", zh: "香蕉", ko: "바나나", hi: "केला", vi: "chuối", tw: "香蕉", th: "กล้วย", hk: "香蕉", sg: "pisang", it: "banana", fr: "banane", yo: "ọgẹ̀dẹ̀" },
+  cherry: { bis: "seresa", tg: "seresa", zh: "樱桃", ko: "체리", hi: "चेरी", vi: "anh đào", tw: "櫻桃", th: "เชอร์รี่", hk: "車厘子", sg: "ceri", it: "ciliegia", fr: "cerise", yo: "ṣẹẹri" },
+  grape: { bis: "ubas", tg: "ubas", zh: "葡萄", ko: "포도", hi: "अंगूर", vi: "nho", tw: "葡萄", th: "องุ่น", hk: "提子", sg: "anggur", it: "uva", fr: "raisin", yo: "grẹẹdi" },
+  lemon: { bis: "lemon", tg: "lemon", zh: "柠檬", ko: "레몬", hi: "नींबू", vi: "chanh", tw: "檸檬", th: "มะนาว", hk: "檸檬", sg: "lemon", it: "limone", fr: "citron", yo: "ọsàn" },
+  orange: { bis: "kahel", tg: "dalandan", zh: "橙子", ko: "오렌지", hi: "संतरा", vi: "cam", tw: "橘子", th: "ส้ม", hk: "橙", sg: "oren", it: "arancia", fr: "orange", yo: "ọsàn" },
+  mango: { bis: "mango", tg: "mangga", zh: "芒果", ko: "망고", hi: "आम", vi: "xoài", tw: "芒果", th: "มะม่วง", hk: "芒果", sg: "mangga", it: "mango", fr: "mangue", yo: "màngọrọ" },
+  pineapple: { bis: "pinya", tg: "pinya", zh: "菠萝", ko: "파인애플", hi: "अनानास", vi: "dứa", tw: "鳳梨", th: "สับปะรด", hk: "菠蘿", sg: "nenas", it: "ananas", fr: "ananas", yo: "ọsàn-ọgẹdẹ" },
+  strawberry: { bis: "strawberry", tg: "strawberry", zh: "草莓", ko: "딸기", hi: "स्ट्रॉबेरी", vi: "dâu tây", tw: "草莓", th: "สตรอเบอร์รี่", hk: "士多啤梨", sg: "strawberi", it: "fragola", fr: "fraise", yo: "ṣitọbẹri" },
+  watermelon: { bis: "pakwan", tg: "pakwan", zh: "西瓜", ko: "수박", hi: "तरबूज", vi: "dưa hấu", tw: "西瓜", th: "แตงโม", hk: "西瓜", sg: "tembikai", it: "cocomero", fr: "pastèque", yo: "bàrà" },
+  avocado: { bis: "abokado", tg: "abokado", zh: "牛油果", ko: "아보카도", hi: "एवोकाडो", vi: "bơ", tw: "酪梨", th: "อะโวคาโด", hk: "牛油果", sg: "avokado", it: "avocado", fr: "avocat", yo: "afọkado" },
+
+  // === Vegetables ===
+  carrot: { bis: "karot", tg: "karot", zh: "胡萝卜", ko: "당근", hi: "गाजर", vi: "cà rốt", tw: "紅蘿蔔", th: "แครอต", hk: "紅蘿蔔", sg: "lobak", it: "carota", fr: "carotte", yo: "kàrótì" },
+  potato: { bis: "patatas", tg: "patatas", zh: "土豆", ko: "감자", hi: "आलू", vi: "khoai tây", tw: "馬鈴薯", th: "มันฝรั่ง", hk: "薯仔", sg: "kentang", it: "patata", fr: "pomme de terre", yo: "àlùbọ́sà" },
+  onion: { bis: "sibuyas", tg: "sibuyas", zh: "洋葱", ko: "양파", hi: "प्याज", vi: "hành tây", tw: "洋蔥", th: "หัวหอม", hk: "洋蔥", sg: "bawang", it: "cipolla", fr: "oignon", yo: "alubosa" },
+  garlic: { bis: "ahos", tg: "bawang", zh: "大蒜", ko: "마늘", hi: "लहसुन", vi: "tỏi", tw: "蒜頭", th: "กระเทียม", hk: "蒜頭", sg: "bawang putih", it: "aglio", fr: "ail", yo: "àlùbọ́sà-àárà" },
+  tomato: { bis: "kamatis", tg: "kamatis", zh: "番茄", ko: "토마토", hi: "टमाटर", vi: "cà chua", tw: "番茄", th: "มะเขือเทศ", hk: "番茄", sg: "tomato", it: "pomodoro", fr: "tomate", yo: "tọmaṣì" },
+  celery: { bis: "selery", tg: "seleri", zh: "芹菜", ko: "셀러리", hi: "अजवायन", vi: "cần tây", tw: "芹菜", th: "ขึ้นฉ่าย", hk: "西芹", sg: "saderi", it: "sedano", fr: "céleri", yo: "sẹlẹri" },
+  spinach: { bis: "spinach", tg: "spinach", zh: "菠菜", ko: "시금치", hi: "पालक", vi: "rau bina", tw: "菠菜", th: "ผักโขม", hk: "菠菜", sg: "bayam", it: "spinacio", fr: "épinard", yo: "ṣipinaṣi" },
+  lettuce: { bis: "letsugas", tg: "letsugas", zh: "生菜", ko: "상추", hi: "सलाद", vi: "xà lách", tw: "生菜", th: "ผักกินใบ", hk: "生菜", sg: "selada", it: "lattuga", fr: "laitue", yo: "lẹtusi" },
+  cabbage: { bis: "repolyo", tg: "repolyo", zh: "卷心菜", ko: "양배추", hi: "पत्तागोभी", vi: "bắp cải", tw: "高麗菜", th: "กะหล่ำปลี", hk: "椰菜", sg: "kobis", it: "cavolo", fr: "chou", yo: "kàbàjí" },
+  broccoli: { bis: "broccoli", tg: "broccoli", zh: "西兰花", ko: "브로콜리", hi: "ब्रोकली", vi: "súp lơ", tw: "花椰菜", th: "บรอกโคลี", hk: "西蘭花", sg: "brokoli", it: "broccolo", fr: "brocoli", yo: "brọkọli" },
+  cucumber: { bis: "pipino", tg: "pipino", zh: "黄瓜", ko: "오이", hi: "खीरा", vi: "dưa leo", tw: "小黃瓜", th: "แตงกวา", hk: "青瓜", sg: "timun", it: "cetriolo", fr: "concombre", yo: "kùkùmbà" },
+  pumpkin: { bis: "kalabasa", tg: "kalabasa", zh: "南瓜", ko: "호박", hi: "कद्दू", vi: "bí ngô", tw: "南瓜", th: "ฟักทอง", hk: "南瓜", sg: "labu", it: "zucca", fr: "citrouille", yo: "ẹlẹ́gẹ́dẹ̀" },
+  corn: { bis: "mais", tg: "mais", zh: "玉米", ko: "옥수수", hi: "मक्का", vi: "ngô", tw: "玉米", th: "ข้าวโพด", hk: "粟米", sg: "jagung", it: "mais", fr: "maïs", yo: "àgbàdo" },
+  mushroom: { bis: "uhong", tg: "kabute", zh: "蘑菇", ko: "버섯", hi: "मशरूम", vi: "nấm", tw: "蘑菇", th: "เห็ด", hk: "蘑菇", sg: "cendawan", it: "fungo", fr: "champignon", yo: "ọ̀sẹ̀" },
+  pepper: { bis: "sili", tg: "sili", zh: "辣椒", ko: "고추", hi: "मिर्च", vi: "ớt", tw: "辣椒", th: "พริก", hk: "辣椒", sg: "cili", it: "peperone", fr: "poivron", yo: "ata" },
+  chili: { bis: "sili", tg: "sili", zh: "辣椒", ko: "칠리", hi: "मिर्च", vi: "ớt", tw: "辣椒", th: "พริกขี้หนู", hk: "辣椒", sg: "cili padi", it: "peperoncino", fr: "piment", yo: "ata" },
+  eggplant: { bis: "talong", tg: "talong", zh: "茄子", ko: "가지", hi: "बैंगन", vi: "cà tím", tw: "茄子", th: "มะเขือม่วง", hk: "茄子", sg: "terung", it: "melanzana", fr: "aubergine", yo: "ẹ̀gúsí" },
+
+  // === Grains & Carbs ===
+  rice: { bis: "kan-on", tg: "kanin", zh: "米饭", ko: "쌀", hi: "चावल", vi: "gạo", tw: "米", th: "ข้าว", hk: "米", sg: "beras", it: "riso", fr: "riz", yo: "iyo" },
+  pasta: { bis: "pasta", tg: "pasta", zh: "意面", ko: "파스타", hi: "पास्ता", vi: "mì ống", tw: "義大利麵", th: "พาสต้า", hk: "意粉", sg: "pasta", it: "pasta", fr: "pâtes", yo: "pásítà" },
+  noodle: { bis: "pancit", tg: "pancit", zh: "面条", ko: "면", hi: "नूडल", vi: "mì", tw: "麵", th: "ก๋วยเตี๋ยว", hk: "麵", sg: "mee", it: "noodle", fr: "nouille", yo: "núdùlì" },
+  bread: { bis: "pan", tg: "tinapay", zh: "面包", ko: "빵", hi: "ब्रेड", vi: "bánh mì", tw: "麵包", th: "ขนมปัง", hk: "麵包", sg: "roti", it: "pane", fr: "pain", yo: "búrẹ́dì" },
+  flour: { bis: "harina", tg: "harina", zh: "面粉", ko: "밀가루", hi: "आटा", vi: "bột mì", tw: "麵粉", th: "แป้ง", hk: "麵粉", sg: "tepung", it: "farina", fr: "farine", yo: "ẹlùbọ̀" },
+  wheat: { bis: "trigo", tg: "trigo", zh: "小麦", ko: "밀", hi: "गेहूं", vi: "lúa mì", tw: "小麥", th: "ข้าวสาลี", hk: "小麥", sg: "gandum", it: "grano", fr: "blé", yo: "wẹ́ẹ̀tì" },
+  oat: { bis: "oats", tg: "oats", zh: "燕麦", ko: "오트", hi: "जई", vi: "yến mạch", tw: "燕麥", th: "ข้าวโอ๊ต", hk: "燕麥", sg: "oat", it: "avena", fr: "avoine", yo: "ọọti" },
+
+  // === Liquids ===
+  water: { bis: "tubig", tg: "tubig", zh: "水", ko: "물", hi: "पानी", vi: "nước", tw: "水", th: "น้ำ", hk: "水", sg: "air", it: "acqua", fr: "eau", yo: "omi" },
+  juice: { bis: "jus", tg: "katas", zh: "果汁", ko: "주스", hi: "रस", vi: "nước ép", tw: "果汁", th: "น้ำผลไม้", hk: "果汁", sg: "jus", it: "succo", fr: "jus", yo: "ọmì" },
+  wine: { bis: "bino", tg: "alak", zh: "葡萄酒", ko: "와인", hi: "शराब", vi: "rượu vang", tw: "葡萄酒", th: "ไวน์", hk: "紅酒", sg: "wain", it: "vino", fr: "vin", yo: "waini" },
+  beer: { bis: "serbesa", tg: "serbesa", zh: "啤酒", ko: "맥주", hi: "बियर", vi: "bia", tw: "啤酒", th: "เบียร์", hk: "啤酒", sg: "bir", it: "birra", fr: "bière", yo: "bía" },
+  coffee: { bis: "kape", tg: "kape", zh: "咖啡", ko: "커피", hi: "कॉफी", vi: "cà phê", tw: "咖啡", th: "กาแฟ", hk: "咖啡", sg: "kopi", it: "caffè", fr: "café", yo: "kọfi" },
+  tea: { bis: "tsaa", tg: "tsaa", zh: "茶", ko: "차", hi: "चाय", vi: "trà", tw: "茶", th: "ชา", hk: "茶", sg: "teh", it: "tè", fr: "thé", yo: "tì" },
+  broth: { bis: "sabaw", tg: "sabaw", zh: "高汤", ko: "육수", hi: "शोरबा", vi: "nước dùng", tw: "高湯", th: "น้ำซุป", hk: "上湯", sg: "kaldu", it: "brodo", fr: "bouillon", yo: "ọmì-ọbẹ̀" },
+  soup: { bis: "sabaw", tg: "sopas", zh: "汤", ko: "수프", hi: "सूप", vi: "súp", tw: "湯", th: "ซุป", hk: "湯", sg: "sup", it: "zuppa", fr: "soupe", yo: "ọbẹ̀" },
+  oil: { bis: "lana", tg: "langis", zh: "油", ko: "기름", hi: "तेल", vi: "dầu", tw: "油", th: "น้ำมัน", hk: "油", sg: "minyak", it: "olio", fr: "huile", yo: "epo" },
+  vinegar: { bis: "suka", tg: "suka", zh: "醋", ko: "식초", hi: "सिरका", vi: "giấm", tw: "醋", th: "น้ำส้ม", hk: "醋", sg: "cuka", it: "aceto", fr: "vinaigre", yo: "fìrẹ̀ẹ̀" },
+  sauce: { bis: "sarsa", tg: "sarsa", zh: "酱汁", ko: "소스", hi: "सॉस", vi: "xốt", tw: "醬汁", th: "ซอส", hk: "醬汁", sg: "sos", it: "salsa", fr: "sauce", yo: "sọọṣi" },
+
+  // === Spices & Seasonings ===
+  salt: { bis: "asin", tg: "asin", zh: "盐", ko: "소금", hi: "नमक", vi: "muối", tw: "鹽", th: "เกลือ", hk: "鹽", sg: "garam", it: "sale", fr: "sel", yo: "iyọ" },
+  sugar: { bis: "asukar", tg: "asukal", zh: "糖", ko: "설탕", hi: "चीनी", vi: "đường", tw: "糖", th: "น้ำตาล", hk: "糖", sg: "gula", it: "zucchero", fr: "sucre", yo: "súgà" },
+  honey: { bis: "dugos", tg: "pulot", zh: "蜂蜜", ko: "꿀", hi: "शहद", vi: "mật ong", tw: "蜂蜜", th: "น้ำผึ้ง", hk: "蜜糖", sg: "madu", it: "miele", fr: "miel", yo: "oyin" },
+  ginger: { bis: "luy-a", tg: "luya", zh: "姜", ko: "생강", hi: "अदरक", vi: "gừng", tw: "薑", th: "ขิง", hk: "薑", sg: "halia", it: "zenzero", fr: "gingembre", yo: "ata-ile" },
+  cinnamon: { bis: "cinnamon", tg: "kanela", zh: "肉桂", ko: "계피", hi: "दालचीनी", vi: "quế", tw: "肉桂", th: "อบเชย", hk: "肉桂", sg: "kayu manis", it: "cannella", fr: "cannelle", yo: "ṣinamọni" },
+  basil: { bis: "basil", tg: "balanoy", zh: "罗勒", ko: "바질", hi: "तुलसी", vi: "húng quế", tw: "羅勒", th: "โหระพา", hk: "羅勒", sg: "selasih", it: "basilico", fr: "basilic", yo: "básílí" },
+  mint: { bis: "mint", tg: "yerba buena", zh: "薄荷", ko: "민트", hi: "पुदीना", vi: "bạc hà", tw: "薄荷", th: "มิ้นต์", hk: "薄荷", sg: "pudina", it: "menta", fr: "menthe", yo: "ẹ̀fọ́ tẹ̀" },
+
+  // === Sweets ===
+  chocolate: { bis: "tsokolate", tg: "tsokolate", zh: "巧克力", ko: "초콜릿", hi: "चॉकलेट", vi: "sô cô la", tw: "巧克力", th: "ช็อกโกแลต", hk: "朱古力", sg: "coklat", it: "cioccolato", fr: "chocolat", yo: "ṣọkọlẹti" },
+  cookie: { bis: "galleta", tg: "galyetas", zh: "饼干", ko: "쿠키", hi: "कुकी", vi: "bánh quy", tw: "餅乾", th: "คุกกี้", hk: "曲奇", sg: "biskut", it: "biscotto", fr: "biscuit", yo: "kúkì" },
+  cake: { bis: "keyk", tg: "keyk", zh: "蛋糕", ko: "케이크", hi: "केक", vi: "bánh ngọt", tw: "蛋糕", th: "เค้ก", hk: "蛋糕", sg: "kek", it: "torta", fr: "gâteau", yo: "kẹ́kì" },
+  icecream: { bis: "sorbetes", tg: "sorbetes", zh: "冰淇淋", ko: "아이스크림", hi: "आइसक्रीम", vi: "kem", tw: "冰淇淋", th: "ไอศกรีม", hk: "雪糕", sg: "ais krim", it: "gelato", fr: "glace", yo: "áísì-kírímì" },
+
+  // === Cooking tools ===
+  pot: { bis: "kaldero", tg: "kawali", zh: "锅", ko: "냄비", hi: "बर्तन", vi: "nồi", tw: "鍋", th: "หม้อ", hk: "煲", sg: "periuk", it: "pentola", fr: "marmite", yo: "agbada" },
+  pan: { bis: "kaha", tg: "kawali", zh: "平底锅", ko: "프라이팬", hi: "तवा", vi: "chảo", tw: "平底鍋", th: "กระทะ", hk: "鑊", sg: "kuali", it: "padella", fr: "poêle", yo: "irọ" },
+  knife: { bis: "kutsilyo", tg: "kutsilyo", zh: "刀", ko: "칼", hi: "चाकू", vi: "dao", tw: "刀", th: "มีด", hk: "刀", sg: "pisau", it: "coltello", fr: "couteau", yo: "ọbẹ̀" },
+  bowl: { bis: "bowl", tg: "mangkok", zh: "碗", ko: "그릇", hi: "कटोरा", vi: "tô", tw: "碗", th: "ชาม", hk: "碗", sg: "mangkuk", it: "ciotola", fr: "bol", yo: "igbá" },
+  plate: { bis: "plato", tg: "plato", zh: "盘子", ko: "접시", hi: "प्लेट", vi: "đĩa", tw: "盤子", th: "จาน", hk: "碟", sg: "pinggan", it: "piatto", fr: "assiette", yo: "abọ́" },
+  cup: { bis: "kopa", tg: "tasa", zh: "杯子", ko: "컵", hi: "कप", vi: "cốc", tw: "杯子", th: "ถ้วย", hk: "杯", sg: "cawan", it: "tazza", fr: "tasse", yo: "ifẹ̀" },
+  glass: { bis: "baso", tg: "baso", zh: "玻璃杯", ko: "유리잔", hi: "गिलास", vi: "ly", tw: "玻璃杯", th: "แก้ว", hk: "玻璃杯", sg: "gelas", it: "bicchiere", fr: "verre", yo: "fìlà" },
+
+  // === Units ===
+  cups: { bis: "kopa", tg: "tasa", zh: "杯", ko: "컵", hi: "कप", vi: "cốc", tw: "杯", th: "ถ้วย", hk: "杯", sg: "cawan", it: "tazze", fr: "tasses", yo: "ifẹ̀" },
+  tbsp: { bis: "kutsara", tg: "kutsara", zh: "汤匙", ko: "큰술", hi: "बड़ा चम्मच", vi: "thìa canh", tw: "湯匙", th: "ช้อนโต๊ะ", hk: "湯匙", sg: "sudu besar", it: "cucchiaio", fr: "cuillère", yo: "ìwọ̀n" },
+  tsp: { bis: "kutsarita", tg: "kutsarita", zh: "茶匙", ko: "작은술", hi: "छोटा चम्मच", vi: "thìa cà phê", tw: "茶匙", th: "ช้อนชา", hk: "茶匙", sg: "sudu kecil", it: "cucchiaino", fr: "cuillère à café", yo: "ìwọ̀n kékeré" },
+  oz: { bis: "onsa", tg: "onsa", zh: "盎司", ko: "온스", hi: "औंस", vi: "ao", tw: "盎司", th: "ออนซ์", hk: "安士", sg: "auns", it: "oncia", fr: "once", yo: "ọnsì" },
+  lb: { bis: "libra", tg: "libra", zh: "磅", ko: "파운드", hi: "पाउंड", vi: "pao", tw: "磅", th: "ปอนด์", hk: "磅", sg: "paun", it: "libbra", fr: "livre", yo: "pọọndì" },
+  g: { bis: "grama", tg: "grama", zh: "克", ko: "그램", hi: "ग्राम", vi: "gam", tw: "克", th: "กรัม", hk: "克", sg: "gram", it: "grammo", fr: "gramme", yo: "gírámù" },
+  kg: { bis: "kilograma", tg: "kilo", zh: "千克", ko: "킬로그램", hi: "किलोग्राम", vi: "kg", tw: "公斤", th: "กิโลกรัม", hk: "公斤", sg: "kilogram", it: "chilogrammo", fr: "kilogramme", yo: "kílógírámù" },
+  ml: { bis: "millilitro", tg: "milya-litro", zh: "毫升", ko: "밀리리터", hi: "मिलीलीटर", vi: "ml", tw: "毫升", th: "มิลลิลิตร", hk: "毫升", sg: "mililiter", it: "millilitro", fr: "millilitre", yo: "mílìlítà" },
+  l: { bis: "litro", tg: "litro", zh: "升", ko: "리터", hi: "लीटर", vi: "lít", tw: "公升", th: "ลิตร", hk: "升", sg: "liter", it: "litro", fr: "litre", yo: "lítà" },
+  piece: { bis: "piraso", tg: "piraso", zh: "块", ko: "조각", hi: "टुकड़ा", vi: "miếng", tw: "塊", th: "ชิ้น", hk: "件", sg: "keping", it: "pezzo", fr: "morceau", yo: "ẹyọ" },
+  clove: { bis: "cloves", tg: "butil", zh: "瓣", ko: "알", hi: "लौंग", vi: "tép", tw: "瓣", th: "กลีบ", hk: "瓣", sg: "ulas", it: "spicchio", fr: "gousse", yo: "ẹyọ" },
+  slice: { bis: "hiwa", tg: "hiwa", zh: "片", ko: "조각", hi: "स्लाइस", vi: "lát", tw: "片", th: "ชิ้น", hk: "片", sg: "hirisan", it: "fetta", fr: "tranche", yo: "gẹ́" },
+  can: { bis: "lata", tg: "lata", zh: "罐", ko: "캔", hi: "डिब्बा", vi: "lon", tw: "罐", th: "กระป๋อง", hk: "罐", sg: "tin", it: "lattina", fr: "boîte", yo: "kán" },
+  pinch: { bis: "tipik", tg: "tipak", zh: "撮", ko: "꼬집", hi: "चुटकी", vi: "nhúm", tw: "撮", th: "หยิบมือ", hk: "少許", sg: "secubit", it: "pizzico", fr: "pincée", yo: "ìwọ̀n kéékèké" },
+  whole: { bis: "tibuok", tg: "buo", zh: "整个", ko: "전체", hi: "पूरा", vi: "nguyên", tw: "整個", th: "ทั้ง", hk: "整個", sg: "satu", it: "intero", fr: "entier", yo: "kíkún" },
+
+  // === Cooking verbs ===
+  saute: { bis: "gisa", tg: "gisa", zh: "炒", ko: "볶다", hi: "तलना", vi: "xào", tw: "炒", th: "ผัด", hk: "炒", sg: "tumis", it: "saltare", fr: "sauter", yo: "rírín" },
+  simmer: { bis: "halo-halo", tg: "pakulo", zh: "炖", ko: "끓이다", hi: "उबालना", vi: "hầm", tw: "燉", th: "ตุ๋น", hk: "燉", sg: "reneh", it: "sobollire", fr: "mijoter", yo: "sísè" },
+  boil: { bis: "abaga", tg: "pakulo", zh: "煮", ko: "끓이다", hi: "उबालना", vi: "luộc", tw: "煮", th: "ต้ม", hk: "煮", sg: "rebus", it: "bollire", fr: "bouillir", yo: "kíkún" },
+  fry: { bis: "prito", tg: "prito", zh: "炸", ko: "튀기다", hi: "तलना", vi: "chiên", tw: "炸", th: "ทอด", hk: "炸", sg: "goreng", it: "friggere", fr: "frire", yo: "dídín" },
+  bake: { bis: "luto", tg: "hurno", zh: "烤", ko: "굽다", hi: "बेक", vi: "nướng", tw: "烤", th: "อบ", hk: "焗", sg: "bakar", it: "cuocere", fr: "cuire", yo: "sísín" },
+  grill: { bis: "ihaw", tg: "ihaw", zh: "烧烤", ko: "구이", hi: "ग्रिल", vi: "nướng", tw: "烤", th: "ย่าง", hk: "燒", sg: "panggang", it: "grigliare", fr: "griller", yo: "yíyan" },
+  steam: { bis: "asing-asing", tg: "asing-asing", zh: "蒸", ko: "찌다", hi: "भाप", vi: "hấp", tw: "蒸", th: "นึ่ง", hk: "蒸", sg: "kukus", it: "cuocere a vapore", fr: "cuire à la vapeur", yo: "fífẹ̀" },
+  chop: { bis: "puta", tg: "puta", zh: "切", ko: "썰다", hi: "काटना", vi: "chặt", tw: "切", th: "สับ", hk: "斬", sg: "cincang", it: "tritare", fr: "hacher", yo: "gẹ́gẹ́" },
+  mix: { bis: "halo", tg: "halo", zh: "混合", ko: "섞다", hi: "मिलाना", vi: "trộn", tw: "混合", th: "ผสม", hk: "混合", sg: "campur", it: "mescolare", fr: "mélanger", yo: "dídá" },
+  stir: { bis: "ukay", tg: "halo", zh: "搅拌", ko: "저다", hi: "हिलाना", vi: "khuấy", tw: "攪拌", th: "กวน", hk: "攪", sg: "kacau", it: "girare", fr: "remuer", yo: "kíkọ" },
+  cook: { bis: "luto", tg: "luto", zh: "烹饪", ko: "요리", hi: "पकाना", vi: "nấu", tw: "煮", th: "ทำอาหาร", hk: "煮", sg: "masak", it: "cucinare", fr: "cuisiner", yo: "síṣe" },
+  heat: { bis: "init", tg: "init", zh: "加热", ko: "가열", hi: "गरम", vi: "đun", tw: "加熱", th: "อุ่น", hk: "加熱", sg: "panas", it: "scaldare", fr: "chauffer", yo: "gíga" },
+  season: { bis: "lasa", tg: "lasa", zh: "调味", ko: "간", hi: "मसाला", vi: "nêm", tw: "調味", th: "ปรุง", hk: "調味", sg: "perasa", it: "condire", fr: "assaisonner", yo: "síṣe" },
+  marinate: { bis: "marinate", tg: "atsara", zh: "腌制", ko: "재우다", hi: "मैरीनेट", vi: "ướp", tw: "醃", th: "ดอง", hk: "醃", sg: "perap", it: "marinare", fr: "mariner", yo: "dídọ̀" },
+  drain: { bis: "tulo", tg: "tulo", zh: "沥干", ko: "물기빼기", hi: "निकालना", vi: "ráo", tw: "瀝乾", th: "กรอง", hk: "瀝乾", sg: "tapis", it: "scolare", fr: "égoutter", yo: "gígà" },
+  pour: { bis: "bubo", tg: "bubo", zh: "倒", ko: "붓다", hi: "डालना", vi: "đổ", tw: "倒", th: "เท", hk: "倒", sg: "tuang", it: "versare", fr: "verser", yo: "sísọ" },
+  add: { bis: "dugang", tg: "dagdagan", zh: "加", ko: "추가", hi: "जोड़ना", vi: "thêm", tw: "加", th: "เพิ่ม", hk: "加", sg: "tambah", it: "aggiungere", fr: "ajouter", yo: "fífí" },
+  remove: { bis: "kuha", tg: "tanggalin", zh: "移除", ko: "제거", hi: "हटाना", vi: "bỏ", tw: "移除", th: "เอาออก", hk: "移除", sg: "buang", it: "rimuovere", fr: "retirer", yo: "yíyọ" },
+  peel: { bis: "panit", tg: "balatan", zh: "削皮", ko: "껍질벗기기", hi: "छीलना", vi: "gọt", tw: "削皮", th: "ปอก", hk: "去皮", sg: "kupas", it: "sbucciare", fr: "éplucher", yo: "gígbe" },
+  wash: { bis: "hugas", tg: "hugas", zh: "洗", ko: "씻다", hi: "धोना", vi: "rửa", tw: "洗", th: "ล้าง", hk: "洗", sg: "basuh", it: "lavare", fr: "laver", yo: "fífọ" },
+  cut: { bis: "puta", tg: "puta", zh: "切", ko: "자르다", hi: "काटना", vi: "cắt", tw: "切", th: "ตัด", hk: "切", sg: "potong", it: "tagliare", fr: "couper", yo: "gẹ́gẹ́" },
+  serve: { bis: "iserbi", tg: "ihain", zh: "上菜", ko: "서빙", hi: "परोसना", vi: "phục vụ", tw: "上菜", th: "เสิร์ฟ", hk: "上菜", sg: "hidang", it: "servire", fr: "servir", yo: "fífí" },
+
+  // === Kitchen terms ===
+  ingredient: { bis: "sangkap", tg: "sangkap", zh: "食材", ko: "재료", hi: "सामग्री", vi: "nguyên liệu", tw: "食材", th: "วัตถุดิบ", hk: "食材", sg: "bahan", it: "ingrediente", fr: "ingrédient", yo: "èròjà" },
+  recipe: { bis: "resipe", tg: "resipe", zh: "食谱", ko: "레시피", hi: "व्यंजन", vi: "công thức", tw: "食譜", th: "สูตรอาหาร", hk: "食譜", sg: "resipi", it: "ricetta", fr: "recette", yo: "àwọn èròjà" },
+  step: { bis: "hakbang", tg: "hakbang", zh: "步骤", ko: "단계", hi: "चरण", vi: "bước", tw: "步驟", th: "ขั้นตอน", hk: "步驟", sg: "langkah", it: "passo", fr: "étape", yo: "ìgbésẹ̀" },
+  serving: { bis: "serbisyu", tg: "pagkain", zh: "份量", ko: "인분", hi: "सर्विंग", vi: "phần", tw: "份量", th: "ที่เสิร์ฟ", hk: "份量", sg: "sajian", it: "porzione", fr: "portion", yo: "ìpín" },
+  servings: { bis: "serbisyu", tg: "pagkain", zh: "份量", ko: "인분", hi: "सर्विंग", vi: "phần", tw: "份量", th: "ที่เสิร์ฟ", hk: "份量", sg: "sajian", it: "porzioni", fr: "portions", yo: "ìpín" },
+  timer: { bis: "timer", tg: "timer", zh: "计时器", ko: "타이머", hi: "टाइमर", vi: "hẹn giờ", tw: "計時器", th: "ตัวจับเวลา", hk: "計時器", sg: "pemasa", it: "timer", fr: "minuteur", yo: "àkókò" },
+  minute: { bis: "minuto", tg: "minuto", zh: "分钟", ko: "분", hi: "मिनट", vi: "phút", tw: "分鐘", th: "นาที", hk: "分鐘", sg: "minit", it: "minuto", fr: "minute", yo: "ìṣẹ́jú" },
+  minutes: { bis: "minuto", tg: "minuto", zh: "分钟", ko: "분", hi: "मिनट", vi: "phút", tw: "分鐘", th: "นาที", hk: "分鐘", sg: "minit", it: "minuti", fr: "minutes", yo: "ìṣẹ́jú" },
+  hour: { bis: "oras", tg: "oras", zh: "小时", ko: "시간", hi: "घंटा", vi: "giờ", tw: "小時", th: "ชั่วโมง", hk: "小時", sg: "jam", it: "ora", fr: "heure", yo: "wákàtí" },
+  hours: { bis: "oras", tg: "oras", zh: "小时", ko: "시간", hi: "घंटा", vi: "giờ", tw: "小時", th: "ชั่วโมง", hk: "小時", sg: "jam", it: "ore", fr: "heures", yo: "wákàtí" },
+  min: { bis: "min", tg: "min", zh: "分", ko: "분", hi: "मि", vi: "phút", tw: "分", th: "นาที", hk: "分", sg: "min", it: "min", fr: "min", yo: "ìṣ" },
+  high: { bis: "taas", tg: "mataas", zh: "高", ko: "높음", hi: "उच्च", vi: "cao", tw: "高", th: "สูง", hk: "高", sg: "tinggi", it: "alto", fr: "élevé", yo: "gíga" },
+  "med-high": { bis: "medyo-taas", tg: "katamtaman", zh: "中高", ko: "중높음", hi: "मध्यम-उच्च", vi: "trung-cao", tw: "中高", th: "กลาง-สูง", hk: "中高", sg: "sederhana-tinggi", it: "medio-alto", fr: "moyen-élevé", yo: "àárín-gíga" },
+  medium: { bis: "tunga", tg: "katamtaman", zh: "中", ko: "중간", hi: "मध्यम", vi: "trung bình", tw: "中", th: "กลาง", hk: "中", sg: "sederhana", it: "medio", fr: "moyen", yo: "àárín" },
+  low: { bis: "ubos", tg: "mababa", zh: "低", ko: "낮음", hi: "निम्न", vi: "thấp", tw: "低", th: "ต่ำ", hk: "低", sg: "rendah", it: "basso", fr: "bas", yo: "kékèké" },
+  High: { bis: "Taas", tg: "Mataas", zh: "高", ko: "높음", hi: "उच्च", vi: "Cao", tw: "高", th: "สูง", hk: "高", sg: "Tinggi", it: "Alto", fr: "Élevé", yo: "Gíga" },
+  "Med-High": { bis: "Medyo-Taas", tg: "Katamtaman", zh: "中高", ko: "중높음", hi: "मध्यम-उच्च", vi: "Trung-Cao", tw: "中高", th: "กลาง-สูง", hk: "中高", sg: "Sederhana-Tinggi", it: "Medio-Alto", fr: "Moyen-Élevé", yo: "Àárín-Gíga" },
+  Med: { bis: "Tunga", tg: "Katamtaman", zh: "中", ko: "중간", hi: "मध्यम", vi: "Trung", tw: "中", th: "กลาง", hk: "中", sg: "Sederhana", it: "Medio", fr: "Moyen", yo: "Àárín" },
+  Low: { bis: "Ubos", tg: "Mababa", zh: "低", ko: "낮음", hi: "निम्न", vi: "Thấp", tw: "低", th: "ต่ำ", hk: "低", sg: "Rendah", it: "Basso", fr: "Bas", yo: "Kékèké" },
+};
