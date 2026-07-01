@@ -1,184 +1,129 @@
-import type { Ingredient, Step, Recipe, HeatLevel } from "./types";
-import { findIconForTerm } from "./iconDictionary";
-
-function uid(): string {
-  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-}
-
-// Parse a quantity like "1 1/2", "2.5", "1/2", "3"
-function parseQuantity(s: string): number {
-  s = s.trim();
-  const mixed = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
-  if (mixed) return parseInt(mixed[1]) + parseInt(mixed[2]) / parseInt(mixed[3]);
-  const frac = s.match(/^(\d+)\/(\d+)$/);
-  if (frac) return parseInt(frac[1]) / parseInt(frac[2]);
-  const n = parseFloat(s);
-  return isNaN(n) ? 0 : n;
-}
-
-const UNITS_SET = [
-  "cups", "cup", "tablespoons", "tablespoon", "tbsp", "tbsps",
-  "teaspoons", "teaspoon", "tsp", "tsps",
-  "ounces", "ounce", "oz", "lbs", "lb", "pounds", "pound",
-  "grams", "gram", "g", "kg", "kilograms", "kilogram",
-  "ml", "milliliters", "milliliter", "l", "liters", "liter",
-  "cloves", "clove", "slices", "slice", "cans", "can",
-  "pieces", "piece", "whole", "pinch", "dash", "sticks", "stick",
-];
-
-const HEAT_KEYWORDS: { kw: string; level: HeatLevel }[] = [
-  { kw: "high heat", level: "High" },
-  { kw: "medium-high", level: "Med-High" },
-  { kw: "medium high", level: "Med-High" },
-  { kw: "medium heat", level: "Med" },
-  { kw: "medium", level: "Med" },
-  { kw: "low heat", level: "Low" },
-  { kw: "low", level: "Low" },
-  { kw: "simmer", level: "Low" },
-  { kw: "high", level: "High" },
-];
-
-function detectHeat(text: string): HeatLevel {
-  const lower = text.toLowerCase();
-  for (const h of HEAT_KEYWORDS) {
-    if (lower.includes(h.kw)) return h.level;
-  }
-  return "Med";
-}
-
-// Parse time strings like "3-5 mins", "10 minutes", "1 hour", "1.5 hours"
-function parseTime(text: string): number {
-  const lower = text.toLowerCase();
-  let total = 0;
-  // Range: 3-5 mins
-  const range = lower.match(/(\d+)\s*[-–to]+\s*(\d+)\s*(min|mins|minute|minutes)/);
-  if (range) return (parseInt(range[1]) + parseInt(range[2])) / 2;
-  // Hours
-  const hours = lower.match(/(\d+(?:\.\d+)?)\s*(?:hr|hrs|hour|hours)/);
-  if (hours) total += parseFloat(hours[1]) * 60;
-  // Minutes
-  const mins = lower.match(/(\d+(?:\.\d+)?)\s*(?:min|mins|minute|minutes)/);
-  if (mins) total += parseFloat(mins[1]);
-  // Seconds (small, round up to 1 min minimum if present)
-  const secs = lower.match(/(\d+)\s*(?:sec|secs|second|seconds)/);
-  if (secs && total === 0) total = 1;
-  return Math.round(total);
-}
-
-export interface ParsedRecipe {
-  title: string;
-  description: string;
-  ingredients: Ingredient[];
-  steps: Step[];
-}
-
-export function parseRawRecipe(raw: string): ParsedRecipe {
-  const lines = raw.split("\n").map((l) => l.trim()).filter(Boolean);
-  if (lines.length === 0) {
-    return { title: "", description: "", ingredients: [], steps: [] };
-  }
-
-  // Title: first non-empty line that doesn't look like an ingredient or step
-  let title = "Untitled Recipe";
-  let titleIdx = 0;
-  for (let i = 0; i < Math.min(lines.length, 5); i++) {
-    const line = lines[i];
-    const looksLikeIngredient = /^\d/.test(line) || /\d+\s*(cup|tbsp|tsp|oz|lb|g|kg|ml|l)\b/i.test(line);
-    const looksLikeStep = /^\d+[.)\]]/.test(line);
-    if (!looksLikeIngredient && !looksLikeStep && line.length > 2) {
-      title = line.replace(/^#+\s*/, "").replace(/^["']|["']$/g, "");
-      titleIdx = i;
-      break;
-    }
-  }
-
-  // Description: line after title if it's prose (not ingredient/step)
-  let description = "";
-  if (titleIdx + 1 < lines.length) {
-    const next = lines[titleIdx + 1];
-    const looksLikeIngredient = /^\d/.test(next);
-    const looksLikeStep = /^\d+[.)\]]/.test(next);
-    if (!looksLikeIngredient && !looksLikeStep && next.length > 10) {
-      description = next;
-    }
-  }
-
-  const ingredients: Ingredient[] = [];
-  const steps: Step[] = [];
-
-  const unitRegex = new RegExp(
-    `^(\\d+(?:\\s+\\d+/\\d+)?(?:\\.\\d+)?|\\d+/\\d+)\\s*(${UNITS_SET.join("|")})?\\s+(.+)$`,
-    "i"
-  );
-
-  for (const line of lines) {
-    const stepMatch = line.match(/^(\d+)\s*[.)\]]\s*(.+)/);
-    if (stepMatch) {
-      const stepText = stepMatch[2].trim();
-      const timer = parseTime(stepText);
-      const heat = detectHeat(stepText);
-      steps.push({
-        id: uid(),
-        text: stepText,
-        heat,
-        timerMinutes: timer,
-        proTip: "",
-        ingredientIds: [],
-      });
-      continue;
-    }
-
-    const ingMatch = line.match(unitRegex);
-    if (ingMatch) {
-      const qty = parseQuantity(ingMatch[1]);
-      const unit = (ingMatch[2] || "piece").toLowerCase();
-      const name = ingMatch[3].replace(/[,;].*$/, "").trim();
-      ingredients.push({
-        id: uid(),
-        quantity: qty,
-        unit,
-        name,
-        icon: findIconForTerm(name),
-      });
-      continue;
-    }
-
-    // If line starts with a bullet or dash, treat as ingredient without quantity
-    if (/^[•\-*]\s+/.test(line)) {
-      const name = line.replace(/^[•\-*]\s+/, "").trim();
-      ingredients.push({
-        id: uid(),
-        quantity: 1,
-        unit: "piece",
-        name,
-        icon: findIconForTerm(name),
-      });
-    }
-  }
-
-  // Auto-link ingredients to steps by keyword matching
-  for (const step of steps) {
-    const lowerText = step.text.toLowerCase();
-    for (const ing of ingredients) {
-      if (ing.name.length > 2 && lowerText.includes(ing.name.toLowerCase())) {
-        step.ingredientIds.push(ing.id);
-      }
-    }
-  }
-
-  return { title, description, ingredients, steps };
-}
-
-export function parsedToRecipe(parsed: ParsedRecipe): Recipe {
-  const now = Date.now();
-  return {
-    id: uid(),
-    title: parsed.title || "Untitled Recipe",
-    description: parsed.description,
-    servings: 4,
-    ingredients: parsed.ingredients,
-    steps: parsed.steps,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
+aW1wb3J0IHR5cGUgeyBJbmdyZWRpZW50LCBTdGVwLCBSZWNpcGUsIEhlYXRM
+ZXZlbCB9IGZyb20gIi4vdHlwZXMiOwppbXBvcnQgeyBmaW5kSWNvbkZvclRl
+cm0gfSBmcm9tICIuL2ljb25EaWN0aW9uYXJ5IjsKCmZ1bmN0aW9uIHVpZCgp
+OiBzdHJpbmcgewogIHJldHVybiBNYXRoLnJhbmRvbSgpLnRvU3RyaW5nKDM2
+KS5zbGljZSgyLCAxMCkgKyBEYXRlLm5vdygpLnRvU3RyaW5nKDM2KTsKfQoK
+Ly8gUGFyc2UgYSBxdWFudGl0eSBsaWtlICIxIDEvMiIsICIyLjUiLCAiMS8y
+IiwgIjMiCmZ1bmN0aW9uIHBhcnNlUXVhbnRpdHkoczogc3RyaW5nKTogbnVt
+YmVyIHsKICBzID0gcy50cmltKCk7CiAgY29uc3QgbWl4ZWQgPSBzLm1hdGNo
+KC9eKFxkKylccysoXGQrKVwvKFxkKykkLyk7CiAgaWYgKG1peGVkKSByZXR1
+cm4gcGFyc2VJbnQobWl4ZWRbMV0pICsgcGFyc2VJbnQobWl4ZWRbMl0pIC8g
+cGFyc2VJbnQobWl4ZWRbM10pOwogIGNvbnN0IGZyYWMgPSBzLm1hdGNoKC9e
+KFxkKylcLyhcZCspJC8pOwogIGlmIChmcmFjKSByZXR1cm4gcGFyc2VJbnQo
+ZnJhY1sxXSkgLyBwYXJzZUludChmcmFjWzJdKTsKICBjb25zdCBuID0gcGFy
+c2VGbG9hdChzKTsKICByZXR1cm4gaXNOYU4obikgPyAwIDogbjsKfQoKY29u
+c3QgVU5JVFNfU0VUID0gWwogICJjdXBzIiwgImN1cCIsICJ0YWJsZXNwb29u
+cyIsICJ0YWJsZXNwb29uIiwgInRic3AiLCAidGJzcHMiLAogICJ0ZWFzcG9v
+bnMiLCAidGVhc3Bvb24iLCAidHNwIiwgInRzcHMiLAogICJvdW5jZXMiLCAi
+b3VuY2UiLCAib3oiLCAibGJzIiwgImxiIiwgInBvdW5kcyIsICJwb3VuZCIs
+CiAgImdyYW1zIiwgImdyYW0iLCAiZyIsICJrZyIsICJraWxvZ3JhbXMiLCAi
+a2lsb2dyYW0iLAogICJtbCIsICJtaWxsaWxpdGVycyIsICJtaWxsaWxpdGVy
+IiwgImwiLCAibGl0ZXJzIiwgImxpdGVyIiwKICAiY2xvdmVzIiwgImNsb3Zl
+IiwgInNsaWNlcyIsICJzbGljZSIsICJjYW5zIiwgImNhbiIsCiAgInBpZWNl
+cyIsICJwaWVjZSIsICJ3aG9sZSIsICJwaW5jaCIsICJkYXNoIiwgInN0aWNr
+cyIsICJzdGljayIsCl07Cgpjb25zdCBIRUFUX0tFWVdPUkRTOiB7IGt3OiBz
+dHJpbmc7IGxldmVsOiBIZWF0TGV2ZWwgfVtdID0gWwogIHsga3c6ICJoaWdo
+IGhlYXQiLCBsZXZlbDogIkhpZ2giIH0sCiAgeyBrdzogIm1lZGl1bS1oaWdo
+IiwgbGV2ZWw6ICJNZWQtSGlnaCIgfSwKICB7IGt3OiAibWVkaXVtIGhpZ2gi
+LCBsZXZlbDogIk1lZC1IaWdoIiB9LAogIHsga3c6ICJtZWRpdW0gaGVhdCIs
+IGxldmVsOiAiTWVkIiB9LAogIHsga3c6ICJtZWRpdW0iLCBsZXZlbDogIk1l
+ZCIgfSwKICB7IGt3OiAibG93IGhlYXQiLCBsZXZlbDogIkxvdyIgfSwKICB7
+IGt3OiAibG93IiwgbGV2ZWw6ICJMb3ciIH0sCiAgeyBrdzogInNpbW1lciIs
+IGxldmVsOiAiTG93IiB9LAogIHsga3c6ICJoaWdoIiwgbGV2ZWw6ICJIaWdo
+IiB9LApdOwoKZnVuY3Rpb24gZGV0ZWN0SGVhdCh0ZXh0OiBzdHJpbmcpOiBI
+ZWF0TGV2ZWwgewogIGNvbnN0IGxvd2VyID0gdGV4dC50b0xvd2VyQ2FzZSgp
+OwogIGZvciAoY29uc3QgaCBvZiBIRUFUX0tFWVdPUkRTKSB7CiAgICBpZiAo
+bG93ZXIuaW5jbHVkZXMoaC5rdykpIHJldHVybiBoLmxldmVsOwogIH0KICBy
+ZXR1cm4gIk1lZCI7Cn0KCi8vIFBhcnNlIHRpbWUgc3RyaW5ncyBsaWtlICIz
+LTUgbWlucyIsICIxMCBtaW51dGVzIiwgIjEgaG91ciIsICIxLjUgaG91cnMi
+CmZ1bmN0aW9uIHBhcnNlVGltZSh0ZXh0OiBzdHJpbmcpOiBudW1iZXIgewog
+IGNvbnN0IGxvd2VyID0gdGV4dC50b0xvd2VyQ2FzZSgpOwogIGxldCB0b3Rh
+bCA9IDA7CiAgLy8gUmFuZ2U6IDMtNSBtaW5zCiAgY29uc3QgcmFuZ2UgPSBs
+b3dlci5tYXRjaCgvKFxkKylccypbLeKAk3RvXStccyooXGQrKVxzKihtaW58
+bWluc3xtaW51dGV8bWludXRlcykvKTsKICBpZiAocmFuZ2UpIHJldHVybiAo
+cGFyc2VJbnQocmFuZ2VbMV0pICsgcGFyc2VJbnQocmFuZ2VbMl0pKSAvIDI7
+CiAgLy8gSG91cnMKICBjb25zdCBob3VycyA9IGxvd2VyLm1hdGNoKC8oXGQr
+KD86XC5cZCspPylccyooPzpocnxocnN8aG91cnxob3VycykvKTsKICBpZiAo
+aG91cnMpIHRvdGFsICs9IHBhcnNlRmxvYXQoaG91cnNbMV0pICogNjA7CiAg
+Ly8gTWludXRlcwogIGNvbnN0IG1pbnMgPSBsb3dlci5tYXRjaCgvKFxkKyg/
+OlwuXGQrKT8pXHMqKD86bWlufG1pbnN8bWludXRlfG1pbnV0ZXMpLyk7CiAg
+aWYgKG1pbnMpIHRvdGFsICs9IHBhcnNlRmxvYXQobWluc1sxXSk7CiAgLy8g
+U2Vjb25kcyAoc21hbGwsIHJvdW5kIHVwIHRvIDEgbWluIG1pbmltdW0gaWYg
+cHJlc2VudCkKICBjb25zdCBzZWNzID0gbG93ZXIubWF0Y2goLyhcZCspXHMq
+KD86c2VjfHNlY3N8c2Vjb25kfHNlY29uZHMpLyk7CiAgaWYgKHNlY3MgJiYg
+dG90YWwgPT09IDApIHRvdGFsID0gMTsKICByZXR1cm4gTWF0aC5yb3VuZCh0
+b3RhbCk7Cn0KCmV4cG9ydCBpbnRlcmZhY2UgUGFyc2VkUmVjaXBlIHsKICB0
+aXRsZTogc3RyaW5nOwogIGRlc2NyaXB0aW9uOiBzdHJpbmc7CiAgaW5ncmVk
+aWVudHM6IEluZ3JlZGllbnRbXTsKICBzdGVwczogU3RlcFtdOwp9CgpleHBv
+cnQgZnVuY3Rpb24gcGFyc2VSYXdSZWNpcGUocmF3OiBzdHJpbmcpOiBQYXJz
+ZWRSZWNpcGUgewogIGNvbnN0IGxpbmVzID0gcmF3LnNwbGl0KCJcbiIpLm1h
+cCgobCkgPT4gbC50cmltKCkpLmZpbHRlcihCb29sZWFuKTsKICBpZiAobGlu
+ZXMubGVuZ3RoID09PSAwKSB7CiAgICByZXR1cm4geyB0aXRsZTogIiIsIGRl
+c2NyaXB0aW9uOiAiIiwgaW5ncmVkaWVudHM6IFtdLCBzdGVwczogW10gfTsK
+ICB9CgogIC8vIFRpdGxlOiBmaXJzdCBub24tZW1wdHkgbGluZSB0aGF0IGRv
+ZXNuJ3QgbG9vayBsaWtlIGFuIGluZ3JlZGllbnQgb3Igc3RlcAogIGxldCB0
+aXRsZSA9ICJVbnRpdGxlZCBSZWNpcGUiOwogIGxldCB0aXRsZUlkeCA9IDA7
+CiAgZm9yIChsZXQgaSA9IDA7IGkgPCBNYXRoLm1pbihsaW5lcy5sZW5ndGgs
+IDUpOyBpKyspIHsKICAgIGNvbnN0IGxpbmUgPSBsaW5lc1tpXTsKICAgIGNv
+bnN0IGxvb2tzTGlrZUluZ3JlZGllbnQgPSAvXlxkLy50ZXN0KGxpbmUpIHx8
+IC9cZCtccyooY3VwfHRic3B8dHNwfG96fGxifGd8a2d8bWx8bClcYi9pLnRl
+c3QobGluZSk7CiAgICBjb25zdCBsb29rc0xpa2VTdGVwID0gL15cZCtbLilc
+XV0vLnRlc3QobGluZSk7CiAgICBpZiAoIWxvb2tzTGlrZUluZ3JlZGllbnQg
+JiYgIWxvb2tzTGlrZVN0ZXAgJiYgbGluZS5sZW5ndGggPiAyKSB7CiAgICAg
+IHRpdGxlID0gbGluZS5yZXBsYWNlKC9eIytccyovLCAiIikucmVwbGFjZSgv
+XlsiJ118WyInXSQvZywgIiIpOwogICAgICB0aXRsZUlkeCA9IGk7CiAgICAg
+IGJyZWFrOwogICAgfQogIH0KCiAgLy8gRGVzY3JpcHRpb246IGxpbmUgYWZ0
+ZXIgdGl0bGUgaWYgaXQncyBwcm9zZSAobm90IGluZ3JlZGllbnQvc3RlcCkK
+ICBsZXQgZGVzY3JpcHRpb24gPSAiIjsKICBpZiAodGl0bGVJZHggKyAxIDwg
+bGluZXMubGVuZ3RoKSB7CiAgICBjb25zdCBuZXh0ID0gbGluZXNbdGl0bGVJ
+ZHggKyAxXTsKICAgIGNvbnN0IGxvb2tzTGlrZUluZ3JlZGllbnQgPSAvXlxk
+Ly50ZXN0KG5leHQpOwogICAgY29uc3QgbG9va3NMaWtlU3RlcCA9IC9eXGQr
+Wy4pXF1dLy50ZXN0KG5leHQpOwogICAgaWYgKCFsb29rc0xpa2VJbmdyZWRp
+ZW50ICYmICFsb29rc0xpa2VTdGVwICYmIG5leHQubGVuZ3RoID4gMTApIHsK
+ICAgICAgZGVzY3JpcHRpb24gPSBuZXh0OwogICAgfQogIH0KCiAgY29uc3Qg
+aW5ncmVkaWVudHM6IEluZ3JlZGllbnRbXSA9IFtdOwogIGNvbnN0IHN0ZXBz
+OiBTdGVwW10gPSBbXTsKCiAgY29uc3QgdW5pdFJlZ2V4ID0gbmV3IFJlZ0V4
+cCgKICAgICBeKFxcZCsoPzpcXHMrXFxkKy9cXGQrKT8oPzpcXC5cXGQrKT98
+XFxkKy9cXGQrKVxccyooJHtVTklUU19TRVQuam9pbigifCIpfSk/XFxzKygu
+KykkYCwKICAgICJpIgogICk7CgogIGZvciAoY29uc3QgbGluZSBvZiBsaW5l
+cykgewogICAgY29uc3Qgc3RlcE1hdGNoID0gbGluZS5tYXRjaCgvXihcZCsp
+XHMqWy4pXF1dXHMqKC4rKS8pOwogICAgaWYgKHN0ZXBNYXRjaCkgewogICAg
+ICBjb25zdCBzdGVwVGV4dCA9IHN0ZXBNYXRjaFsyXS50cmltKCk7CiAgICAg
+IGNvbnN0IHRpbWVyID0gcGFyc2VUaW1lKHN0ZXBUZXh0KTsKICAgICAgY29u
+c3QgaGVhdCA9IGRldGVjdEhlYXQoc3RlcFRleHQpOwogICAgICBzdGVwcy5w
+dXNoKHsKICAgICAgICBpZDogdWlkKCksCiAgICAgICAgdGV4dDogc3RlcFRl
+eHQsCiAgICAgICAgaGVhdCwKICAgICAgICB0aW1lck1pbnV0ZXM6IHRpbWVy
+LAogICAgICAgIHByb1RpcDogIiIsCiAgICAgICAgaW5ncmVkaWVudElkczog
+W10sCiAgICAgIH0pOwogICAgICBjb250aW51ZTsKICAgIH0KCiAgICBjb25z
+dCBpbmdNYXRjaCA9IGxpbmUubWF0Y2godW5pdFJlZ2V4KTsKICAgIGlmIChp
+bmdNYXRjaCkgewogICAgICBjb25zdCBxdHkgPSBwYXJzZVF1YW50aXR5KGlu
+Z01hdGNoWzFdKTsKICAgICAgY29uc3QgdW5pdCA9IChpbmdNYXRjaFsyXSB8
+fCAicGllY2UiKS50b0xvd2VyQ2FzZSgpOwogICAgICBjb25zdCBuYW1lID0g
+aW5nTWF0Y2hbM10ucmVwbGFjZSgvWyw7XS4qJC8sICIiKS50cmltKCk7CiAg
+ICAgIGluZ3JlZGllbnRzLnB1c2goewogICAgICAgIGlkOiB1aWQoKSwKICAg
+ICAgICBxdWFudGl0eTogcXR5LAogICAgICAgIHVuaXQ6ICJwaWVjZSIsCiAg
+ICAgICAgbmFtZSwKICAgICAgICBpY29uOiBmaW5kSWNvbkZvclRlcm0obmFt
+ZSksCiAgICAgIH0pOwogICAgICBjb250aW51ZTsKICAgIH0KCiAgICAvLyBJ
+ZiBsaW5lIHN0YXJ0cyB3aXRoIGEgYnVsbGV0IG9yIGRhc2gsIHRyZWF0IGFz
+IGluZ3JlZGllbnQgd2l0aG91dCBxdWFudGl0eQogICAgaWYgKC9eW+KAolwt
+Kl1ccysvLnRlc3QobGluZSkpIHsKICAgICAgY29uc3QgbmFtZSA9IGxpbmUu
+cmVwbGFjZSgvXlvigKJcLSpdXHMrLywgIiIpLnRyaW0oKTsKICAgICAgaW5n
+cmVkaWVudHMuY3B1c2goewogICAgICAgIGlkOiB1aWQoKSwKICAgICAgICBx
+dWFudGl0eTogMSwKICAgICAgICB1bml0OiAicGllY2UiLAogICAgICAgIG5h
+bWU6LAogICAgICAgIGljb246IGZpbmRJY29uRm9yVGVybShuYW1lKSwKICAg
+ICAgfSk7CiAgICB9CiAgfQoKIC8vIEF1dG8tbGluayBpbmdyZWRpZW50cyB0
+byBzdGVwcyBieSBrZXl3b3JkIG1hdGNoaW5nCiAgZm9yIChjb25zdCBzdGVw
+IG9mIHN0ZXBzKSB7CiAgICBjb25zdCBsb3dlclRleHQgPSBzdGVwLnRleHQu
+dG9Mb3dlckNhc2UoKTsKICAgIGZvciAoY29uc3QgaW5nIG9mIGluZ3JlZGll
+bnRzKSB7CiAgICAgIGlmIChpbmcubmFtZS5sZW5ndGggPiAyICYmIGxvd2Vy
+VGV4dC5pbmNsdWRlcyhpbmcubmFtZS50b0xvd2VyQ2FzZSgpKSkgewogICAg
+ICAgc3RlcS5pbmdyZWRpZW50SWRzLnB1c2goaW5nLmlkKTsKICAgICAgfQog
+ICAgfQogIH0KCiAgcmV0dXJuIHsgdGl0bGUsIGRlc2NyaXB0aW9uLCBpbmdy
+ZWRpZW50cywgc3RlcHMgfTsKfQoKZXhwb3J0IGZ1bmN0aW9uIHBhcnNlZFRv
+UmVjaXBlKHBhcnNlZDogUGFyc2VkUmVjaXBlKTogUmVjaXBlIHsKICBjb25z
+dCBub3cgPSBEYXRlLm5vdygpOwogIHJldHVybiB7CiAgICBpZDogdWlkKCks
+CiAgICB0aXRsZTogcGFyc2VkLnRpdGxlIHx8ICJVbnRpdGxlZCBSZWNpcGUi
+LAogICAgZGVzY3JpcHRpb246IHBhcnNlZC5kZXNjcmlwdGlvbiwKICAgIHNl
+cnZpbmdzOiA0LAogICAgaW5ncmVkaWVudHM6IHBhcnNlZC5pbmdyZWRpZW50
+cywKICAgIHN0ZXBzOiBwYXJzZWQuc3RlcHMsCiAgICBjcmVhdGVkQXQ6IG5v
+dywKICAgIHVwZGF0ZWRBdDogbm93LAogIH07Cn0K
